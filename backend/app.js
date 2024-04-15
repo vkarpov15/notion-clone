@@ -8,6 +8,9 @@ const multer = require("multer");
 const dotenv = require("dotenv");
 dotenv.config();
 
+const stargateMongoose = require("stargate-mongoose");
+mongoose.setDriver(stargateMongoose.driver);
+
 const pagesRoutes = require("./routes/pages");
 const usersRoutes = require("./routes/users");
 
@@ -99,9 +102,8 @@ app.listen(PORT, () => {
 });
 
 // ----- CHECKING IF CONNECTED WITH DATABASE OR CATCH & DISPLAY ERRORS ----
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+mongoose.connect(process.env.ASTRA_CONNECTION_STRING, {
+  isAstra: true
 });
 
 const db = mongoose.connection;
