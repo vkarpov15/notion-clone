@@ -12,6 +12,7 @@ const stargateMongoose = require("stargate-mongoose");
 mongoose.setDriver(stargateMongoose.driver);
 
 const pagesRoutes = require("./routes/pages");
+const questionRoutes = require("./routes/question");
 const usersRoutes = require("./routes/users");
 
 // Configuration where images should be stored and named
@@ -84,6 +85,7 @@ app.use(
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/pages", pagesRoutes);
 app.use("/users", usersRoutes);
+app.use("/question", questionRoutes);
 
 // Error Handling
 app.use((err, req, res, next) => {
