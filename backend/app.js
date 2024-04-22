@@ -62,6 +62,14 @@ const fileFilter = (req, file, cb) => {
 const app = express();
 
 app.use(cors());
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.send('');
+    return;
+  }
+
+  next();
+});
 
 app.use(bodyParser.json());
 app.use(cookieParser());
