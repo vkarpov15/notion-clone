@@ -56,7 +56,6 @@ Express.js · MongoDB with Mongoose · Nodemailer · JWT (Cookie-based)
    PORT=8080
    MAILGUN_DOMAIN=
    MAILGUN_PRIVATE_KEY=
-   MAILGUN_PUBLIC_KEY=
    MAILGUN_FROM_EMAIL=
    ASTRA_CONNECTION_STRING=
    OPENAI_API_KEY=
