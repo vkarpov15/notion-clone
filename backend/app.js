@@ -61,7 +61,11 @@ const fileFilter = (req, file, cb) => {
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    callback(null, true);
+  }
+}));
 app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
     res.send('');
