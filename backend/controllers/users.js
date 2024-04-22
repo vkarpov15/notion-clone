@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
-const transport = require("../emails/transport");
+const { sendMail } = require("../emails/transport");
 
 const {
   resetPasswordTemplate,
@@ -44,15 +44,12 @@ const signup = async (req, res, next) => {
     });
     const savedUser = await user.save();
 
-    /*await transport.sendMail({
-      from: process.env.MAIL_SENDER,
+    await sendMail({
+      from: process.env.MAILGUN_FROM_EMAIL,
       to: savedUser.email,
       subject: "Confirm Your Email Address",
       html: emailConfirmationTemplate(savedUser.activationToken),
-    });*/
-    console.log(savedUser.email);
-    console.log("Confirm Your Email Address");
-    console.log(emailConfirmationTemplate(savedUser.activationToken));
+    });
 
     // Automatically log in user after registration
     const token = jwt.sign(
@@ -228,8 +225,8 @@ const getResetToken = async (req, res, next) => {
     user.resetTokenExpiry = resetTokenExpiry;
     const savedUser = await user.save();
 
-    await transport.sendMail({
-      from: process.env.MAIL_SENDER,
+    await sendMail({
+      from: process.env.MAILGUN_FROM_EMAIL,
       to: savedUser.email,
       subject: "Your Password Reset Token",
       html: resetPasswordTemplate(resetToken),

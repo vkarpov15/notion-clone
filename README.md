@@ -54,12 +54,12 @@ Express.js · MongoDB with Mongoose · Nodemailer · JWT (Cookie-based)
    DOMAIN="localhost"
    JWT_KEY="yourSecretForTokenGeneration"
    PORT=8080
-   MONGO_URI="mongodb+srv://username:password@cluster.gqqwp.gcp.mongodb.net/database?retryWrites=true&w=majority"
-   MAIL_HOST="smtp.sendgrid.net"
-   MAIL_PORT=465
-   MAIL_USER="apiKey"
-   MAIL_SENDER="Your Name <your@mail.com>"
-   MAIL_PASSWORD="yourSendGridApiKey"
+   MAILGUN_DOMAIN=
+   MAILGUN_PRIVATE_KEY=
+   MAILGUN_PUBLIC_KEY=
+   MAILGUN_FROM_EMAIL=
+   ASTRA_CONNECTION_STRING=
+   OPENAI_API_KEY=
    ```
 
    Frontend: Create an `.env.local` file in the `frontend` directory:
