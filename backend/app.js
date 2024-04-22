@@ -62,7 +62,8 @@ const fileFilter = (req, file, cb) => {
 const app = express();
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL
+  origin: process.env.FRONTEND_URL,
+  credentials: true
 }));
 app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
