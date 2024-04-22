@@ -82,10 +82,37 @@ app.use(
   }).single("image")
 );
 
+let last100Requests = [];
+
+function limitTo100Requests() {
+  return (req, res, next) => {
+    if (last100Requests.length < 100) {
+      last100Requests.push({
+        date: new Date(),
+        url: req.url
+      });
+  
+      next();
+    } else {
+      const oldestRequest = last100Requests[0];
+      if (Date.now() - oldestRequest.date.valueOf() <= 1000 * 60 * 60) {
+        res.status(400).send("Rate limit exceeded, API only supports 100 requests/hour currently");
+        return;
+      }
+      last100Requests.shift();
+      last100Requests.push({
+        date: new Date(),
+        url: req.url
+      });
+      next();
+    }
+  }
+}
+
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/pages", pagesRoutes);
 app.use("/users", usersRoutes);
-app.use("/question", questionRoutes);
+app.use("/question", limitTo100Requests, questionRoutes);
 
 // Error Handling
 app.use((err, req, res, next) => {
