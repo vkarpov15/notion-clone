@@ -63,7 +63,8 @@ const signup = async (req, res, next) => {
       httpOnly: true,
       maxAge: maxAge,
       domain: process.env.DOMAIN,
-      sameSite: "lax",
+      sameSite: "None",
+      secure: true,
     });
 
     res.status(201).json({
