@@ -1,39 +1,37 @@
 import EditablePage from "../components/editablePage";
+import { useEffect, useState } from "react";
 
 // If a user hits "/", we create a blank page and redirect to that page
 // so that each user gets his/her personal space to test things
 
-const IndexPage = ({ pid, blocks, err }) => {
-  return <EditablePage id={pid} fetchedBlocks={blocks} err={err} />;
-};
+const IndexPage = () => {
+  const [page, setPage] = useState(null);
 
-export const getServerSideProps = async (context) => {
-  const blocks = [{ tag: "p", html: "", imageUrl: "" }];
-  const res = context.res;
-  const req = context.req;
-  try {
+  useEffect(() => void async function fetchData() {
+    const blocks = [{ tag: "p", html: "", imageUrl: "" }];
     const response = await fetch(`${process.env.NEXT_PUBLIC_API}/pages`, {
       method: "POST",
       // Forward the authentication cookie to the backend
       headers: {
         "Content-Type": "application/json",
-        Cookie: req ? req.headers.cookie : undefined,
+        authorization: window.localStorage.getItem("token") || "",
       },
       body: JSON.stringify({
         blocks: blocks,
       }),
     });
     const data = await response.json();
-    const pageId = data.pageId;
-    const creator = data.creator;
-    const query = !creator ? "?public=true" : ""; // needed to show notice
-    res.writeHead(302, { Location: `/p/${pageId}${query}` });
-    res.end();
-    return { props: {} };
-  } catch (err) {
-    console.log(err);
-    return { props: { blocks: null, pid: null, err: true } };
+    setPage(data);
+  }(), []);
+
+  if (!page) {
+    return <div></div>;
   }
+
+  const query = !page.creator ? "?public=true" : "";
+  window.location.href = `/p/${page.pageId}${query}`;
+
+  return <div></div>;
 };
 
 export default IndexPage;

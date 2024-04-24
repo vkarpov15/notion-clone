@@ -74,6 +74,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  next();
+});
+
 app.use(bodyParser.json());
 app.use(cookieParser());
 
@@ -115,7 +119,7 @@ function limitTo100Requests() {
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/pages", pagesRoutes);
 app.use("/users", usersRoutes);
-app.use("/question", limitTo100Requests, questionRoutes);
+app.use("/question", limitTo100Requests(), questionRoutes);
 
 // Error Handling
 app.use((err, req, res, next) => {
