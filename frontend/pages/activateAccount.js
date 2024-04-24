@@ -1,7 +1,7 @@
 import Notice from "../components/notice";
 import { useEffect, useState } from "react";
 
-const query = new URLSearchParams(window.location.search);
+const query = typeof window === 'undefined' ? new Map() : new URLSearchParams(window.location.search);
 
 const ActivateAccountPage = () => {
   if (!query.has('token')) {
