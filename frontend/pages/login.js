@@ -65,6 +65,8 @@ const LoginPage = () => {
         }
       );
       const data = await response.json();
+      console.log('Response', data);
+      return;
       if (data.errCode) {
         setNotice({ type: "ERROR", message: data.message });
       } else {
