@@ -59,7 +59,6 @@ const signup = async (req, res, next) => {
 
     // Set cookie in the browser to store authentication state
     const maxAge = 1000 * 60 * 60 * 24 * 3; // 3 days
-    console.log('Setting cookie for domain', process.env.DOMAIN);
     res.cookie("token", token, {
       httpOnly: false,
       maxAge: maxAge,
@@ -112,9 +111,11 @@ const login = async (req, res, next) => {
     // Set cookie in the browser to store authentication state
     const maxAge = 1000 * 60 * 60; // 1 hour
     res.cookie("token", token, {
-      httpOnly: true,
+      httpOnly: false,
       maxAge: maxAge,
       domain: process.env.DOMAIN,
+      sameSite: "none",
+      secure: true,
     });
 
     res.status(201).json({
