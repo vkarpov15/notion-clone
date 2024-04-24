@@ -6,6 +6,8 @@ const jwt = require("jsonwebtoken");
 
 module.exports = (req, res, next) => {
   const { token } = req.cookies;
+
+  console.log('Access token', token);
   if (token) {
     const { userId } = jwt.verify(token, process.env.JWT_KEY);
     req.userId = userId;
