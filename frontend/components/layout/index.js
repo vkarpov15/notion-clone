@@ -16,6 +16,7 @@ const Layout = ({ children }) => {
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
 
   const isLoginPage = router.pathname === "/login";
+  
   const isAuth = state.isAuth;
 
   const toggleContextMenu = () => {

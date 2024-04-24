@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import cookies from "next-cookies";
 
 import Input from "../components/input";
@@ -35,9 +35,10 @@ const form = {
   },
 };
 
-const AccountPage = ({ user }) => {
+const AccountPage = () => {
   const RESET_NOTICE = { type: "", message: "" };
   const [notice, setNotice] = useState(RESET_NOTICE);
+  const [user, setUser] = useState(null);
   const values = {
     [form.inputs[0].id]: user ? user.name : form.inputs[0].value,
     [form.inputs[1].id]: user ? user.email : form.inputs[1].value,
@@ -49,6 +50,38 @@ const AccountPage = ({ user }) => {
     setFormData({ ...formData, [id]: value });
   };
 
+  useEffect(() => void async function fetchData() {
+    // Check for authentication token
+    const token = window.localStorage.getItem('token');
+    if (!token) {
+      // Redirect to login page if token is not available
+      window.location.href = '/login';
+      return;
+    }
+
+    // Fetch user data
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API}/users/account`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error('Failed to fetch user data');
+    }
+    const user = await response.json();
+    setUser({ name: user.name, email: user.email });
+    setFormData({
+      [form.inputs[0].id]: user ? user.name : form.inputs[0].value,
+      [form.inputs[1].id]: user ? user.email : form.inputs[1].value,
+      [form.inputs[2].id]: form.inputs[2].value,
+    });
+  }(), []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setNotice(RESET_NOTICE);
@@ -57,8 +90,10 @@ const AccountPage = ({ user }) => {
         `${process.env.NEXT_PUBLIC_API}/users/account`,
         {
           method: "PUT",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            authorization: window.localStorage.getItem('token') || ""
+          },
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
@@ -105,39 +140,6 @@ const AccountPage = ({ user }) => {
       </form>
     </>
   );
-};
-
-export const getServerSideProps = async (context) => {
-  const { token } = cookies(context);
-  const res = context.res;
-  const req = context.req;
-
-  if (!token) {
-    res.writeHead(302, { Location: `/login` });
-    res.end();
-  }
-
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API}/users/account`,
-      {
-        method: "GET",
-        credentials: "include",
-        // Forward the authentication cookie to the backend
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: req ? req.headers.cookie : undefined,
-        },
-      }
-    );
-    const data = await response.json();
-    return {
-      props: { user: { name: data.name, email: data.email } },
-    };
-  } catch (err) {
-    console.log(err);
-    return { props: {} };
-  }
 };
 
 export default AccountPage;

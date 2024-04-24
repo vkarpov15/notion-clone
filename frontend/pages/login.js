@@ -56,8 +56,10 @@ const LoginPage = () => {
         `${process.env.NEXT_PUBLIC_API}/users/login`,
         {
           method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            authorization: window.localStorage.getItem("token") || "",
+          },
           body: JSON.stringify({
             email: formData.email,
             password: formData.password,
@@ -65,8 +67,7 @@ const LoginPage = () => {
         }
       );
       const data = await response.json();
-      console.log('Response', data);
-      return;
+      window.localStorage.setItem('token', data.token);
       if (data.errCode) {
         setNotice({ type: "ERROR", message: data.message });
       } else {
@@ -121,16 +122,6 @@ const LoginPage = () => {
       </p>
     </>
   );
-};
-
-export const getServerSideProps = (context) => {
-  const { token } = cookies(context);
-  const res = context.res;
-  if (token) {
-    res.writeHead(302, { Location: `/account` });
-    res.end();
-  }
-  return { props: {} };
 };
 
 export default LoginPage;

@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import useRouter from "next/router";
 
-import cookies from "next-cookies";
-
 const LogoutPage = () => {
   useEffect(() => {
     const logoutOnServer = async () => {
@@ -10,9 +8,12 @@ const LogoutPage = () => {
       try {
         await fetch(`${process.env.NEXT_PUBLIC_API}/users/logout`, {
           method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            authorization: window.localStorage.getItem("token") || "",
+          },
         });
+        window.localStorage.setItem('token', '');
         router.push("/login");
       } catch (err) {
         console.log(err);
@@ -21,18 +22,6 @@ const LogoutPage = () => {
     logoutOnServer();
   }, []);
   return null;
-};
-
-export const getServerSideProps = async (context) => {
-  const { token } = cookies(context);
-  const res = context.res;
-
-  if (!token) {
-    res.writeHead(302, { Location: `/login` });
-    res.end();
-  }
-
-  return { props: {} };
 };
 
 export default LogoutPage;

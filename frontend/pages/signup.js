@@ -59,8 +59,10 @@ const SignupPage = () => {
         `${process.env.NEXT_PUBLIC_API}/users/signup`,
         {
           method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            authorization: window.localStorage.getItem("token") || ""
+          },
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
@@ -69,6 +71,7 @@ const SignupPage = () => {
         }
       );
       const data = await response.json();
+      window.localStorage.setItem("token", data.token);
       if (data.errCode) {
         setNotice({ type: "ERROR", message: data.message });
       } else {

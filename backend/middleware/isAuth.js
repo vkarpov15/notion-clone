@@ -5,10 +5,13 @@ const jwt = require("jsonwebtoken");
 // we load the page from the database.
 
 module.exports = (req, res, next) => {
-  const { token } = req.cookies;
+  let { token } = req.cookies;
 
-  console.log('Access token', token);
   if (token) {
+    const { userId } = jwt.verify(token, process.env.JWT_KEY);
+    req.userId = userId;
+  } else if (req.headers.authorization) {
+    token = req.headers.authorization;
     const { userId } = jwt.verify(token, process.env.JWT_KEY);
     req.userId = userId;
   }

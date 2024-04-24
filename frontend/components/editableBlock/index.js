@@ -276,7 +276,9 @@ class EditableBlock extends React.Component {
           `${process.env.NEXT_PUBLIC_API}/pages/images?pageId=${pageId}`,
           {
             method: "POST",
-            credentials: "include",
+            headers: {
+              authorization: window.localStorage.getItem("token") || "",
+            },
             body: formData,
           }
         );

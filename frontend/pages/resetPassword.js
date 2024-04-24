@@ -43,8 +43,10 @@ const ResetPasswordPage = () => {
         `${process.env.NEXT_PUBLIC_API}/users/resetPassword`,
         {
           method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            authorization: window.localStorage.getItem("token") || ""
+          },
           body: JSON.stringify({
             password: formData.password,
             resetToken: router.query.token,
@@ -96,16 +98,6 @@ const ResetPasswordPage = () => {
       </form>
     </>
   );
-};
-
-export const getServerSideProps = (context) => {
-  const { token } = cookies(context);
-  const res = context.res;
-  if (token) {
-    res.writeHead(302, { Location: `/pages` });
-    res.end();
-  }
-  return { props: {} };
 };
 
 export default ResetPasswordPage;

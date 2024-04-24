@@ -46,8 +46,10 @@ const askQuestionPage = () => {
         `${process.env.NEXT_PUBLIC_API}/question`,
         {
           method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            authorization: window.localStorage.getItem("token") || "",
+          },
           body: JSON.stringify({
             question: formData.question
           }),
@@ -111,16 +113,6 @@ const askQuestionPage = () => {
       </div>
     </>
   );
-};
-
-export const getServerSideProps = (context) => {
-  const { token } = cookies(context);
-  const res = context.res;
-  // if (token) {
-  //   res.writeHead(302, { Location: `/account` });
-  //   res.end();
-  // }
-  return { props: {} };
 };
 
 export default askQuestionPage;

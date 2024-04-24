@@ -70,6 +70,7 @@ const signup = async (req, res, next) => {
     res.status(201).json({
       message: "User successfully created.",
       userId: savedUser._id,
+      token,
     });
   } catch (err) {
     next(err);
@@ -281,15 +282,18 @@ const resetPassword = async (req, res, next) => {
 
     const maxAge = 1000 * 60 * 60; // 1 hour
     res.cookie("token", token, {
-      httpOnly: true,
+      httpOnly: false,
       maxAge: maxAge,
       domain: process.env.DOMAIN,
+      sameSite: "none",
+      secure: true,
     });
 
     res.status(201).json({
       message: "Password successfully changed.",
       token: token,
       userId: savedUser._id.toString(),
+      token,
     });
   } catch (err) {
     next(err);

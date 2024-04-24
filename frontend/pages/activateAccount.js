@@ -1,6 +1,43 @@
 import Notice from "../components/notice";
+import { useEffect, useState } from "react";
+
+const query = new URLSearchParams(window.location.search);
 
 const ActivateAccountPage = ({ activated, message }) => {
+  if (!query.has('token')) {
+    throw new Error("Missing activation code.");
+  }
+
+  const [message, setMessage] = useState(query.has('token') ? null : "Missing activation code");
+  const [activated, setActivated] = useState(query.has('token') ? false : true);
+  
+  useEffect(() => void async function fetchData() {
+    if (query.has('token')) {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API}/users/activate`,
+        {
+          method: "POST",
+          // Forward the authentication cookie to the backend
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: req ? req.headers.cookie : undefined,
+          },
+          body: JSON.stringify({
+            activationToken: activationToken,
+          }),
+        }
+      );
+      const data = await response.json();
+  
+      if (data.errCode) {
+        setMessage(data.message);
+      } else {
+        setMessage(data.message);
+        setActivated(true);
+      }
+    }
+  }(), []);
+
   const noticeType = activated ? "SUCCESS" : "ERROR";
 
   return (
@@ -24,7 +61,6 @@ export const getServerSideProps = async (context) => {
       `${process.env.NEXT_PUBLIC_API}/users/activate`,
       {
         method: "POST",
-        credentials: "include",
         // Forward the authentication cookie to the backend
         headers: {
           "Content-Type": "application/json",

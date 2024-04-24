@@ -50,8 +50,10 @@ const EditablePage = ({ id, fetchedBlocks, err }) => {
       try {
         await fetch(`${process.env.NEXT_PUBLIC_API}/pages/${id}`, {
           method: "PUT",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            authorization: window.localStorage.getItem("token") || "",
+          },
           body: JSON.stringify({
             blocks: blocks,
           }),

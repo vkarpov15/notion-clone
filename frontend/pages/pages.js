@@ -1,20 +1,50 @@
-import { useState } from "react";
-import cookies from "next-cookies";
+import { useEffect, useState } from "react";
 
 import Card from "../components/card";
 import Button from "../components/button";
 import Notice from "../components/notice";
 
-const PagesPage = ({ pages }) => {
-  const initialPages = pages || [];
-  const [cards, setCards] = useState(initialPages.map((data) => data.page));
+const PagesPage = () => {
+  const [cards, setCards] = useState([]);
+
+  useEffect(() => void async function fetchData() {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API}/pages`, {
+      method: "GET",
+      // Forward the authentication cookie to the backend
+      headers: {
+        "Content-Type": "application/json",
+        authorization: window.localStorage.getItem("token") || "",
+      },
+    });
+    const data = await response.json();
+    const pageIdList = data.pages;
+    const pages = await Promise.all(
+      pageIdList.map(async (id) => {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API}/pages/${id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              authorization: window.localStorage.getItem("token") || "",
+            },
+          }
+        );
+        return await response.json();
+      })
+    );
+    const filteredPages = pages.filter((page) => !page.errCode);
+    setCards(filteredPages.map(({ page }) => page));
+  }(), []);
 
   const deleteCard = async (pageId) => {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API}/pages/${pageId}`, {
         method: "DELETE",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          authorization: window.localStorage.getItem("token") || "",
+        },
       });
       const cardIndex = cards.map((page) => page._id).indexOf(pageId);
       const updatedCards = [...cards];
@@ -54,53 +84,6 @@ const PagesPage = ({ pages }) => {
       <Button href="/">Create A New Page</Button>
     </>
   );
-};
-
-export const getServerSideProps = async (context) => {
-  const { token } = cookies(context);
-  const res = context.res;
-  const req = context.req;
-
-  if (!token) {
-    res.writeHead(302, { Location: `/login` });
-    res.end();
-  }
-
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API}/pages`, {
-      method: "GET",
-      credentials: "include",
-      // Forward the authentication cookie to the backend
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: req ? req.headers.cookie : undefined,
-      },
-    });
-    const data = await response.json();
-    const pageIdList = data.pages;
-    const pages = await Promise.all(
-      pageIdList.map(async (id) => {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API}/pages/${id}`,
-          {
-            method: "GET",
-            credentials: "include",
-            // Forward the authentication cookie to the backend
-            headers: {
-              "Content-Type": "application/json",
-              Cookie: req ? req.headers.cookie : undefined,
-            },
-          }
-        );
-        return await response.json();
-      })
-    );
-    const filteredPages = pages.filter((page) => !page.errCode);
-    return { props: { pages: filteredPages } };
-  } catch (err) {
-    console.log(err);
-    return { props: {} };
-  }
 };
 
 export default PagesPage;

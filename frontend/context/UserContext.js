@@ -25,16 +25,14 @@ const reducer = (state, action) => {
   }
 };
 
-const UserProvider = ({ children, isAuthenticated }) => {
-  const [state, dispatch] = useReducer(reducer, { isAuth: isAuthenticated });
+const UserProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(reducer, { isAuth: false });
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      dispatch({ type: "LOGIN" });
-    } else {
-      dispatch({ type: "LOGOUT" });
-    }
-  }, [isAuthenticated]);
+  if (typeof window !== 'undefined' && window.localStorage.getItem('token') && !state.isAuth) {
+    dispatch({ type: 'LOGIN' });
+  } else if (typeof window !== 'undefined' && !window.localStorage.getItem('token') && state.isAuth) {
+    dispatch({ type: 'LOGOUT' });
+  }
 
   return (
     <UserStateContext.Provider value={state}>

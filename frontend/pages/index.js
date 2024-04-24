@@ -14,7 +14,6 @@ export const getServerSideProps = async (context) => {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API}/pages`, {
       method: "POST",
-      credentials: "include",
       // Forward the authentication cookie to the backend
       headers: {
         "Content-Type": "application/json",
