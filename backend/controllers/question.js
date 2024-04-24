@@ -4,7 +4,9 @@ const Page = require("../models/page");
 const answerQuestion = async (req, res, next) => {
   const embedding = await createEmbedding(req.body.question);
 
-  const pages = await Page.find().limit(3).sort({ $vector: { $meta: embedding } });
+  const pages = await Page.find({
+    creator: req.userId
+  }).limit(3).sort({ $vector: { $meta: embedding } });
 
   const prompt = `You are a helpful assistant that summarizes relevant notes to help answer a user's questions.
   Given the following notes, answer the user's question.
