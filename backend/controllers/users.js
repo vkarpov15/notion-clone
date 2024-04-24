@@ -60,7 +60,7 @@ const signup = async (req, res, next) => {
     // Set cookie in the browser to store authentication state
     const maxAge = 1000 * 60 * 60 * 24 * 3; // 3 days
     res.cookie("token", token, {
-      httpOnly: true,
+      httpOnly: false,
       maxAge: maxAge,
       domain: process.env.DOMAIN,
       sameSite: "None",
