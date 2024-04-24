@@ -64,7 +64,7 @@ const signup = async (req, res, next) => {
       httpOnly: false,
       maxAge: maxAge,
       domain: process.env.DOMAIN,
-      sameSite: "None",
+      sameSite: "none",
       secure: true,
     });
 
