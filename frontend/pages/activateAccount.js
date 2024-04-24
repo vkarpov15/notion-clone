@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 const query = new URLSearchParams(window.location.search);
 
-const ActivateAccountPage = ({ activated, message }) => {
+const ActivateAccountPage = () => {
   if (!query.has('token')) {
     throw new Error("Missing activation code.");
   }
