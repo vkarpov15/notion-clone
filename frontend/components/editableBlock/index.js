@@ -6,6 +6,7 @@ import TagSelectorMenu from "../tagSelectorMenu";
 import ActionMenu from "../actionMenu";
 import DragHandleIcon from "../../images/draggable.svg";
 import { setCaretToEnd, getCaretCoordinates, getSelection } from "../../utils";
+import React from "react";
 
 const CMD_KEY = "/";
 
