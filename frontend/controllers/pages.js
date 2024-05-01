@@ -1,6 +1,4 @@
-const fs = require("fs");
 const { isAuth } = require("./auth");
-const path = require("path");
 
 const Page = require("../models/page");
 const User = require("../models/user");
@@ -116,7 +114,6 @@ const putPage = async (req) => {
     // Public pages have no creator, they can be updated by anybody
     // For private pages, creator and logged-in user have to be the same
     const creatorId = page.creator ? page.creator.toString() : null;
-    console.log('FA', creatorId, page.creator, userId)
     if ((creatorId && creatorId === userId) || !creatorId) {
       page.blocks = blocks;
       const savedPage = await page.save();
@@ -166,15 +163,6 @@ const deletePage = async (req) => {
         await user.save();
       }
 
-      // Delete images folder too (if exists)
-      const dir = `images/${pageId}`;
-      fs.access(dir, (err) => {
-        // If there is no error, the folder does exist
-        if (!err && dir !== "images/") {
-          fs.rmdirSync(dir, { recursive: true });
-        }
-      });
-
       return {
         message: "Deleted page successfully.",
       };
@@ -188,44 +176,8 @@ const deletePage = async (req) => {
   }
 };
 
-const postImage = (req, res, next) => {
-  if (req.file) {
-    const imageUrl = req.file.path;
-    res.status(200).json({
-      message: "Image uploaded successfully!",
-      imageUrl: imageUrl,
-    });
-  } else {
-    const error = new Error("No image file provided.");
-    error.statusCode = 422;
-    throw error;
-  }
-};
-
-const deleteImage = (req, res, next) => {
-  const imageName = req.params.imageName;
-  if (imageName) {
-    const imagePath = `images/${imageName}`;
-    clearImage(imagePath);
-    res.status(200).json({
-      message: "Deleted image successfully.",
-    });
-  } else {
-    const error = new Error("No imageName provided.");
-    error.statusCode = 422;
-    throw error;
-  }
-};
-
-const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "..", filePath);
-  fs.unlink(filePath, (err) => console.log(err));
-};
-
 exports.getPages = getPages;
 exports.getPage = getPage;
 exports.postPage = postPage;
 exports.putPage = putPage;
 exports.deletePage = deletePage;
-exports.postImage = postImage;
-exports.deleteImage = deleteImage;

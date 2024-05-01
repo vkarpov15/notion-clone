@@ -92,29 +92,8 @@ const EditablePage = ({ id, fetchedBlocks, err }) => {
     }
   }, [blocks, prevBlocks, currentBlockId]);
 
-  const deleteImageOnServer = async (imageUrl) => {
-    // The imageUrl contains images/name.jpg, hence we do not need
-    // to explicitly add the /images endpoint in the API url
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/pages/${imageUrl}`,
-        {
-          method: "DELETE",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      await response.json();
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   const updateBlockHandler = (currentBlock) => {
     const index = blocks.map((b) => b._id).indexOf(currentBlock.id);
-    const oldBlock = blocks[index];
     const updatedBlocks = [...blocks];
     updatedBlocks[index] = {
       ...updatedBlocks[index],
@@ -123,11 +102,6 @@ const EditablePage = ({ id, fetchedBlocks, err }) => {
       imageUrl: currentBlock.imageUrl,
     };
     setBlocks(updatedBlocks);
-    // If the image has been changed, we have to delete the
-    // old image file on the server
-    if (oldBlock.imageUrl && oldBlock.imageUrl !== currentBlock.imageUrl) {
-      deleteImageOnServer(oldBlock.imageUrl);
-    }
   };
 
   const addBlockHandler = (currentBlock) => {
@@ -149,15 +123,9 @@ const EditablePage = ({ id, fetchedBlocks, err }) => {
     if (blocks.length > 1) {
       setCurrentBlockId(currentBlock.id);
       const index = blocks.map((b) => b._id).indexOf(currentBlock.id);
-      const deletedBlock = blocks[index];
       const updatedBlocks = [...blocks];
       updatedBlocks.splice(index, 1);
       setBlocks(updatedBlocks);
-      // If the deleted block was an image block, we have to delete
-      // the image file on the server
-      if (deletedBlock.tag === "img" && deletedBlock.imageUrl) {
-        deleteImageOnServer(deletedBlock.imageUrl);
-      }
     }
   };
 

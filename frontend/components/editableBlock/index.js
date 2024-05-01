@@ -26,7 +26,6 @@ class EditableBlock extends React.Component {
     this.openTagSelectorMenu = this.openTagSelectorMenu.bind(this);
     this.closeTagSelectorMenu = this.closeTagSelectorMenu.bind(this);
     this.handleTagSelection = this.handleTagSelection.bind(this);
-    this.handleImageUpload = this.handleImageUpload.bind(this);
     this.addPlaceholder = this.addPlaceholder.bind(this);
     this.calculateActionMenuPosition = this.calculateActionMenuPosition.bind(
       this
@@ -217,7 +216,11 @@ class EditableBlock extends React.Component {
       tagSelectorMenuPosition: { x: x, y: y },
       tagSelectorMenuOpen: true,
     });
-    document.addEventListener("click", this.closeTagSelectorMenu, false);
+    // Add listener asynchronously to avoid conflicts with
+    // the double click of the text selection
+    setTimeout(() => {
+      document.addEventListener("click", this.closeTagSelectorMenu, false);
+    }, 100);
   }
 
   closeTagSelectorMenu() {
@@ -234,59 +237,16 @@ class EditableBlock extends React.Component {
   // i.e. img = display <div><input /><img /></div> (input picker is hidden)
   // i.e. every other tag = <ContentEditable /> with its tag and html content
   handleTagSelection(tag) {
-    if (tag === "img") {
-      this.setState({ ...this.state, tag: tag }, () => {
+    if (this.state.isTyping) {
+      // Update the tag and restore the html backup without the command
+      this.setState({ tag: tag, html: this.state.htmlBackup }, () => {
+        setCaretToEnd(this.contentEditable.current);
         this.closeTagSelectorMenu();
-        if (this.fileInput) {
-          // Open the native file picker
-          this.fileInput.click();
-        }
-        // Add new block so that the user can continue writing
-        // after adding an image
-        this.props.addBlock({
-          id: this.props.id,
-          html: "",
-          tag: "p",
-          imageUrl: "",
-          ref: this.contentEditable.current,
-        });
       });
     } else {
-      if (this.state.isTyping) {
-        // Update the tag and restore the html backup without the command
-        this.setState({ tag: tag, html: this.state.htmlBackup }, () => {
-          setCaretToEnd(this.contentEditable.current);
-          this.closeTagSelectorMenu();
-        });
-      } else {
-        this.setState({ ...this.state, tag: tag }, () => {
-          this.closeTagSelectorMenu();
-        });
-      }
-    }
-  }
-
-  async handleImageUpload() {
-    if (this.fileInput && this.fileInput.files[0]) {
-      const pageId = this.props.pageId;
-      const imageFile = this.fileInput.files[0];
-      const formData = new FormData();
-      formData.append("image", imageFile);
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API}/pages/images?pageId=${pageId}`,
-          {
-            method: "POST",
-            credentials: "include",
-            body: formData,
-          }
-        );
-        const data = await response.json();
-        const imageUrl = data.imageUrl;
-        this.setState({ ...this.state, imageUrl: imageUrl });
-      } catch (err) {
-        console.log(err);
-      }
+      this.setState({ ...this.state, tag: tag }, () => {
+        this.closeTagSelectorMenu();
+      });
     }
   }
 
@@ -369,69 +329,29 @@ class EditableBlock extends React.Component {
               className={styles.draggable}
               {...provided.draggableProps}
             >
-              {this.state.tag !== "img" && (
-                <ContentEditable
-                  innerRef={this.contentEditable}
-                  data-position={this.props.position}
-                  data-tag={this.state.tag}
-                  html={this.state.html}
-                  onChange={this.handleChange}
-                  onFocus={this.handleFocus}
-                  onBlur={this.handleBlur}
-                  onKeyDown={this.handleKeyDown}
-                  onKeyUp={this.handleKeyUp}
-                  onMouseUp={this.handleMouseUp}
-                  tagName={this.state.tag}
-                  className={[
-                    styles.block,
-                    this.state.isTyping ||
-                    this.state.actionMenuOpen ||
-                    this.state.tagSelectorMenuOpen
-                      ? styles.blockSelected
-                      : null,
-                    this.state.placeholder ? styles.placeholder : null,
-                    snapshot.isDragging ? styles.isDragging : null,
-                  ].join(" ")}
-                />
-              )}
-              {this.state.tag === "img" && (
-                <div
-                  data-position={this.props.position}
-                  data-tag={this.state.tag}
-                  ref={this.contentEditable}
-                  className={[
-                    styles.image,
-                    this.state.actionMenuOpen || this.state.tagSelectorMenuOpen
-                      ? styles.blockSelected
-                      : null,
-                  ].join(" ")}
-                >
-                  <input
-                    id={`${this.props.id}_fileInput`}
-                    name={this.state.tag}
-                    type="file"
-                    onChange={this.handleImageUpload}
-                    ref={(ref) => (this.fileInput = ref)}
-                    hidden
-                  />
-                  {!this.state.imageUrl && (
-                    <label
-                      htmlFor={`${this.props.id}_fileInput`}
-                      className={styles.fileInputLabel}
-                    >
-                      No Image Selected. Click To Select.
-                    </label>
-                  )}
-                  {this.state.imageUrl && (
-                    <img
-                      src={
-                        process.env.NEXT_PUBLIC_API + "/" + this.state.imageUrl
-                      }
-                      alt={/[^\/]+(?=\.[^\/.]*$)/.exec(this.state.imageUrl)[0]}
-                    />
-                  )}
-                </div>
-              )}
+              <ContentEditable
+                innerRef={this.contentEditable}
+                data-position={this.props.position}
+                data-tag={this.state.tag}
+                html={this.state.html}
+                onChange={this.handleChange}
+                onFocus={this.handleFocus}
+                onBlur={this.handleBlur}
+                onKeyDown={this.handleKeyDown}
+                onKeyUp={this.handleKeyUp}
+                onMouseUp={this.handleMouseUp}
+                tagName={this.state.tag}
+                className={[
+                  styles.block,
+                  this.state.isTyping ||
+                  this.state.actionMenuOpen ||
+                  this.state.tagSelectorMenuOpen
+                    ? styles.blockSelected
+                    : null,
+                  this.state.placeholder ? styles.placeholder : null,
+                  snapshot.isDragging ? styles.isDragging : null,
+                ].join(" ")}
+              />
               <span
                 role="button"
                 tabIndex="0"
