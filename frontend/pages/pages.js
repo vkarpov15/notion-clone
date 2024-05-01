@@ -13,8 +13,8 @@ const PagesPage = ({ pages }) => {
 
   const deleteCard = async (pageId) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API}/pages/${pageId}`, {
-        method: "DELETE",
+      await fetch(`/api/delete-page?pageId=${encodeURIComponent(pageId)}`, {
+        method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
@@ -73,7 +73,7 @@ export const getServerSideProps = async (context) => {
   try {
     const pagesIdList = await getPages(req).then(res => res.pages);
     const pages = await Promise.all(
-      pagesIdList.map(async (pageId) => {	
+      pagesIdList.map(async (pageId) => {
         const page = await getPage({ ...req, params: { pageId } }).then(res => res.page);
         return page;
       })

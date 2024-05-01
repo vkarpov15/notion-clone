@@ -34,6 +34,7 @@ const getPages = async (req) => {
 };
 
 const getPage = async (req) => {
+  isAuth(req);
   const userId = req.userId;
   const pageId = req.params.pageId;
 
@@ -63,7 +64,8 @@ const getPage = async (req) => {
   }
 };
 
-const postPage = async (req, res, next) => {
+const postPage = async (req) => {
+  isAuth(req);
   const userId = req.userId;
   const blocks = req.body.blocks;
   const page = new Page({
@@ -85,20 +87,21 @@ const postPage = async (req, res, next) => {
       await user.save();
     }
 
-    res.status(201).json({
+    return {
       message: "Created page successfully.",
       pageId: savedPage._id.toString(),
       blocks: blocks,
       creator: userId || null,
-    });
+    };
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
-const putPage = async (req, res, next) => {
+const putPage = async (req) => {
+  isAuth(req);
   const userId = req.userId;
-  const pageId = req.params.pageId;
+  const pageId = req.query.pageId;
   const blocks = req.body.blocks;
 
   try {
@@ -113,26 +116,28 @@ const putPage = async (req, res, next) => {
     // Public pages have no creator, they can be updated by anybody
     // For private pages, creator and logged-in user have to be the same
     const creatorId = page.creator ? page.creator.toString() : null;
+    console.log('FA', creatorId, page.creator, userId)
     if ((creatorId && creatorId === userId) || !creatorId) {
       page.blocks = blocks;
       const savedPage = await page.save();
-      res.status(200).json({
+      return {
         message: "Updated page successfully.",
         page: savedPage,
-      });
+      };
     } else {
       const err = new Error("User is not authenticated.");
       err.statusCode = 401;
       throw err;
     }
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
-const deletePage = async (req, res, next) => {
+const deletePage = async (req) => {
+  isAuth(req);
   const userId = req.userId;
-  const pageId = req.params.pageId;
+  const pageId = req.query.pageId;
 
   try {
     const page = await Page.findById(pageId);
@@ -170,16 +175,16 @@ const deletePage = async (req, res, next) => {
         }
       });
 
-      res.status(200).json({
+      return {
         message: "Deleted page successfully.",
-      });
+      };
     } else {
       const err = new Error("User is not authenticated.");
       err.statusCode = 401;
       throw err;
     }
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 

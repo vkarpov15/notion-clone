@@ -48,7 +48,7 @@ const EditablePage = ({ id, fetchedBlocks, err }) => {
   useEffect(() => {
     const updatePageOnServer = async (blocks) => {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API}/pages/${id}`, {
+        await fetch(`/api/put-page?pageId=${encodeURIComponent(id)}`, {
           method: "PUT",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
