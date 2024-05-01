@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 
+mongoose.set('autoCreate', false);
+mongoose.set('autoIndex', false);
+
 const stargateMongoose = require("stargate-mongoose");
 mongoose.setDriver(stargateMongoose.driver);
 

@@ -5,6 +5,8 @@ import Card from "../components/card";
 import Button from "../components/button";
 import Notice from "../components/notice";
 
+import { getPages } from "../controllers/pages";
+
 const PagesPage = ({ pages }) => {
   const initialPages = pages || [];
   const [cards, setCards] = useState(initialPages.map((data) => data.page));
@@ -66,36 +68,12 @@ export const getServerSideProps = async (context) => {
     res.end();
   }
 
+  req.cookies = { token };
+
   try {
-    const response = await fetch(`/api/get-pages`, {
-      method: "GET",
-      credentials: "include",
-      // Forward the authentication cookie to the backend
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: req ? req.headers.cookie : undefined,
-      },
-    });
-    const data = await response.json();
-    const pageIdList = data.pages;
-    const pages = await Promise.all(
-      pageIdList.map(async (id) => {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API}/pages/${id}`,
-          {
-            method: "GET",
-            credentials: "include",
-            // Forward the authentication cookie to the backend
-            headers: {
-              "Content-Type": "application/json",
-              Cookie: req ? req.headers.cookie : undefined,
-            },
-          }
-        );
-        return await response.json();
-      })
-    );
+    const pages = await getPages(req, res);
     const filteredPages = pages.filter((page) => !page.errCode);
+
     return { props: { pages: filteredPages } };
   } catch (err) {
     console.log(err);
