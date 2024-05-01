@@ -5,11 +5,11 @@ import Card from "../components/card";
 import Button from "../components/button";
 import Notice from "../components/notice";
 
-import { getPages } from "../controllers/pages";
+import { getPages, getPage } from "../controllers/pages";
 
 const PagesPage = ({ pages }) => {
   const initialPages = pages || [];
-  const [cards, setCards] = useState(initialPages.map((data) => data.page));
+  const [cards, setCards] = useState(initialPages);
 
   const deleteCard = async (pageId) => {
     try {
@@ -71,8 +71,17 @@ export const getServerSideProps = async (context) => {
   req.cookies = { token };
 
   try {
-    const pages = await getPages(req, res);
-    const filteredPages = pages.filter((page) => !page.errCode);
+    const pagesIdList = await getPages(req).then(res => res.pages);
+    const pages = await Promise.all(
+      pagesIdList.map(async (pageId) => {	
+        const page = await getPage({ ...req, params: { pageId } }).then(res => res.page);
+        return page;
+      })
+    );
+    const filteredPages = pages
+      .filter((page) => !page.errCode)
+      // Need to do this because Next.js can't serialize ObjectIds, Dates
+      .map(page => JSON.parse(JSON.stringify(page)));
 
     return { props: { pages: filteredPages } };
   } catch (err) {

@@ -5,7 +5,7 @@ const path = require("path");
 const Page = require("../models/page");
 const User = require("../models/user");
 
-const getPages = async (req, res, next) => {
+const getPages = async (req) => {
   isAuth(req);
   const userId = req.userId;
 
@@ -24,16 +24,16 @@ const getPages = async (req, res, next) => {
       throw err;
     }
 
-    res.status(200).json({
+    return {
       message: "Fetched pages successfully.",
       pages: user.pages.map((page) => page.toString()),
-    });
+    };
   } catch (err) {
     throw err;
   }
 };
 
-const getPage = async (req, res, next) => {
+const getPage = async (req) => {
   const userId = req.userId;
   const pageId = req.params.pageId;
 
@@ -49,17 +49,17 @@ const getPage = async (req, res, next) => {
     // For private pages, creator and logged-in user have to be the same
     const creatorId = page.creator ? page.creator.toString() : null;
     if ((creatorId && creatorId === userId) || !creatorId) {
-      res.status(200).json({
+      return {
         message: "Fetched page successfully.",
         page: page,
-      });
+      };
     } else {
       const err = new Error("User is not authenticated.");
       err.statusCode = 401;
       throw err;
     }
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
