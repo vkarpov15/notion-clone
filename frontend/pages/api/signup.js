@@ -7,6 +7,8 @@ export default async function handler(
   res
 ) {
   return await users.signup(req).then(data => {
+    const maxAge = 1000 * 60 * 60; // 1 hour
+
     // Set cookie in the browser to store authentication state
     res.status(201).setHeader(
       'Set-Cookie',
