@@ -4,6 +4,8 @@ import cookies from "next-cookies";
 import Input from "../components/input";
 import Notice from "../components/notice";
 
+import { getUser } from "../controllers/users";
+
 const form = {
   id: "signup",
   inputs: [
@@ -54,7 +56,7 @@ const AccountPage = ({ user }) => {
     setNotice(RESET_NOTICE);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/users/account`,
+        `/api/update-user`,
         {
           method: "PUT",
           credentials: "include",
@@ -118,19 +120,7 @@ export const getServerSideProps = async (context) => {
   }
 
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API}/users/account`,
-      {
-        method: "GET",
-        credentials: "include",
-        // Forward the authentication cookie to the backend
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: req ? req.headers.cookie : undefined,
-        },
-      }
-    );
-    const data = await response.json();
+    const data = await getUser({ ...req, cookies: { token } });
     return {
       props: { user: { name: data.name, email: data.email } },
     };

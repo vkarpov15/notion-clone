@@ -6,22 +6,21 @@ export default async function handler(
   req,
   res
 ) {
-  return await users.login(req).then(data => {
-    const maxAge = 1000 * 60 * 60; // 1 hour
-
-    // Set cookie in the browser to store authentication state
+  return await users.logout(req).then(data => {
+    // Clear cookie this way because Next.js doesn't have `res.clearCookie()`
     res.status(201).setHeader(
       'Set-Cookie',
       serialize(
         "token",
-        data.token,
+        "",
         {
           httpOnly: true,
-          maxAge: maxAge,
+          expires: new Date(0),
           domain: process.env.DOMAIN,
           path: '/',
         }
       )
-    ).json(data);
+    );
+    res.json(data);
   });
 }

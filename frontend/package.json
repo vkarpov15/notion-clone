@@ -12,6 +12,7 @@
   "author": "Konstantin Münster",
   "license": "ISC",
   "dependencies": {
+    "axios": "1.6.8",
     "bcryptjs": "^2.4.3",
     "cookie": "0.6.0",
     "cross-env": "^7.0.3",
@@ -23,7 +24,6 @@
     "next": "13.x",
     "next-cookies": "^2.0.3",
     "next-images": "^1.4.1",
-    "nodemailer": "^6.4.13",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.0.0",
     "react-contenteditable": "^3.3.5",
