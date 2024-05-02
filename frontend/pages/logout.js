@@ -8,7 +8,7 @@ const LogoutPage = () => {
     const logoutOnServer = async () => {
       const router = useRouter;
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API}/users/logout`, {
+        await fetch(`/api/logout`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },

@@ -56,7 +56,7 @@ const SignupPage = () => {
     setNotice(RESET_NOTICE);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/users/signup`,
+        `/api/signup`,
         {
           method: "POST",
           credentials: "include",

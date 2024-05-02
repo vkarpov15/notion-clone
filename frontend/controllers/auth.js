@@ -4,11 +4,11 @@ const jwt = require("jsonwebtoken");
 // in the authentication middleware. We have further authorization checks when
 // we load the page from the database.
 
-module.exports = (req, res, next) => {
+exports.isAuth = (req, res) => {
   const { token } = req.cookies;
+  
   if (token) {
     const { userId } = jwt.verify(token, process.env.JWT_KEY);
     req.userId = userId;
   }
-  next();
 };

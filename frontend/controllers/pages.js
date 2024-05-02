@@ -1,10 +1,10 @@
-const fs = require("fs");
-const path = require("path");
+const { isAuth } = require("./auth");
 
 const Page = require("../models/page");
 const User = require("../models/user");
 
-const getPages = async (req, res, next) => {
+const getPages = async (req) => {
+  isAuth(req);
   const userId = req.userId;
 
   try {
@@ -22,16 +22,17 @@ const getPages = async (req, res, next) => {
       throw err;
     }
 
-    res.status(200).json({
+    return {
       message: "Fetched pages successfully.",
       pages: user.pages.map((page) => page.toString()),
-    });
+    };
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
-const getPage = async (req, res, next) => {
+const getPage = async (req) => {
+  isAuth(req);
   const userId = req.userId;
   const pageId = req.params.pageId;
 
@@ -47,21 +48,22 @@ const getPage = async (req, res, next) => {
     // For private pages, creator and logged-in user have to be the same
     const creatorId = page.creator ? page.creator.toString() : null;
     if ((creatorId && creatorId === userId) || !creatorId) {
-      res.status(200).json({
+      return {
         message: "Fetched page successfully.",
         page: page,
-      });
+      };
     } else {
       const err = new Error("User is not authenticated.");
       err.statusCode = 401;
       throw err;
     }
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
-const postPage = async (req, res, next) => {
+const postPage = async (req) => {
+  isAuth(req);
   const userId = req.userId;
   const blocks = req.body.blocks;
   const page = new Page({
@@ -83,20 +85,21 @@ const postPage = async (req, res, next) => {
       await user.save();
     }
 
-    res.status(201).json({
+    return {
       message: "Created page successfully.",
       pageId: savedPage._id.toString(),
       blocks: blocks,
       creator: userId || null,
-    });
+    };
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
-const putPage = async (req, res, next) => {
+const putPage = async (req) => {
+  isAuth(req);
   const userId = req.userId;
-  const pageId = req.params.pageId;
+  const pageId = req.query.pageId;
   const blocks = req.body.blocks;
 
   try {
@@ -114,23 +117,24 @@ const putPage = async (req, res, next) => {
     if ((creatorId && creatorId === userId) || !creatorId) {
       page.blocks = blocks;
       const savedPage = await page.save();
-      res.status(200).json({
+      return {
         message: "Updated page successfully.",
         page: savedPage,
-      });
+      };
     } else {
       const err = new Error("User is not authenticated.");
       err.statusCode = 401;
       throw err;
     }
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
-const deletePage = async (req, res, next) => {
+const deletePage = async (req) => {
+  isAuth(req);
   const userId = req.userId;
-  const pageId = req.params.pageId;
+  const pageId = req.query.pageId;
 
   try {
     const page = await Page.findById(pageId);
@@ -159,60 +163,17 @@ const deletePage = async (req, res, next) => {
         await user.save();
       }
 
-      // Delete images folder too (if exists)
-      const dir = `images/${pageId}`;
-      fs.access(dir, (err) => {
-        // If there is no error, the folder does exist
-        if (!err && dir !== "images/") {
-          fs.rmdirSync(dir, { recursive: true });
-        }
-      });
-
-      res.status(200).json({
+      return {
         message: "Deleted page successfully.",
-      });
+      };
     } else {
       const err = new Error("User is not authenticated.");
       err.statusCode = 401;
       throw err;
     }
   } catch (err) {
-    next(err);
+    throw err;
   }
-};
-
-const postImage = (req, res, next) => {
-  if (req.file) {
-    const imageUrl = req.file.path;
-    res.status(200).json({
-      message: "Image uploaded successfully!",
-      imageUrl: imageUrl,
-    });
-  } else {
-    const error = new Error("No image file provided.");
-    error.statusCode = 422;
-    throw error;
-  }
-};
-
-const deleteImage = (req, res, next) => {
-  const imageName = req.params.imageName;
-  if (imageName) {
-    const imagePath = `images/${imageName}`;
-    clearImage(imagePath);
-    res.status(200).json({
-      message: "Deleted image successfully.",
-    });
-  } else {
-    const error = new Error("No imageName provided.");
-    error.statusCode = 422;
-    throw error;
-  }
-};
-
-const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "..", filePath);
-  fs.unlink(filePath, (err) => console.log(err));
 };
 
 exports.getPages = getPages;
@@ -220,5 +181,3 @@ exports.getPage = getPage;
 exports.postPage = postPage;
 exports.putPage = putPage;
 exports.deletePage = deletePage;
-exports.postImage = postImage;
-exports.deleteImage = deleteImage;

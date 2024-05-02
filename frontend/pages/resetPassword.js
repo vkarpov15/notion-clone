@@ -40,7 +40,7 @@ const ResetPasswordPage = () => {
     setNotice(RESET_NOTICE);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/users/resetPassword`,
+        `/api/reset-password`,
         {
           method: "POST",
           credentials: "include",
