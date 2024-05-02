@@ -4,5 +4,7 @@ export default async function handler(
   req,
   res
 ) {
-  return await pages.getPages(req).then(data => res.json(data));
+  return await pages.getPages(req)
+    .then(data => res.json(data))
+    .catch(err => res.status(500).json({ message: err.message }));
 }
