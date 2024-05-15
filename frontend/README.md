@@ -1,5 +1,13 @@
 # notion-clone Frontend
 
+### Getting Started
+
+1. `npm install`
+2. Create `.env.local` with all fields from `.env.example`
+3. `npm run seed`
+4. `npm run dev`
+5. Open `http://localhost:3000`
+
 ### Stack
 
 I tried to keep the frontend stack as lean and precise as possible. Hopefully, that makes it easier to understand...

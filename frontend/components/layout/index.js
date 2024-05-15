@@ -66,6 +66,11 @@ const Layout = ({ children }) => {
                   action: () => handleNavigation("/pages"),
                 },
                 {
+                  id: "askQuestion",
+                  label: "Ask AI",
+                  action: () => handleNavigation("/askQuestion"),
+                },
+                {
                   id: "account",
                   label: "Account",
                   action: () => handleNavigation("/account"),

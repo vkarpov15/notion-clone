@@ -74,11 +74,12 @@ export const getServerSideProps = async (context) => {
     const pagesIdList = await getPages(req).then(res => res.pages);
     const pages = await Promise.all(
       pagesIdList.map(async (pageId) => {
-        const page = await getPage({ ...req, params: { pageId } }).then(res => res.page);
+        const page = await getPage({ ...req, params: { pageId } }).then(res => res.page).catch(() => null);
         return page;
       })
     );
     const filteredPages = pages
+      .filter((page) => page != null)
       .filter((page) => !page.errCode)
       // Need to do this because Next.js can't serialize ObjectIds, Dates
       .map(page => JSON.parse(JSON.stringify(page)));
