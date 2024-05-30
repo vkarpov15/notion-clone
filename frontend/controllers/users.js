@@ -109,8 +109,7 @@ const login = async (req) => {
       userId: user._id.toString(),
     };
   } catch (err) {
-    console.error("users.login", err);
-    res.status(500).json({ message: err.message });
+    throw err;
   }
 };
 

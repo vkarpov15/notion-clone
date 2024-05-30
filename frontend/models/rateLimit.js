@@ -18,4 +18,4 @@ const rateLimitSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("RateLimit", rateLimitSchema, "ratelimits", { overwriteModels: true });
+module.exports = mongoose.model("RateLimit", rateLimitSchema, "RateLimit", { overwriteModels: true });
