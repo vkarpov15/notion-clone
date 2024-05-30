@@ -39,4 +39,4 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("User", userSchema, "users", { overwriteModels: true });
+module.exports = mongoose.model("User", userSchema, "User", { overwriteModels: true });

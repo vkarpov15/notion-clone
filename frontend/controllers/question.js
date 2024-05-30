@@ -8,12 +8,11 @@ const maxOpenAIRequestsPerHour = 250;
 const answerQuestion = async (req) => {
   isAuth(req);
   const userId = req.userId;
-  const embedding = await createEmbedding(req.body.question);
 
   const pages = await Page
     .find({ creator: userId })
     .limit(3)
-    .sort({ $vector: { $meta: embedding } });
+    .sort({ $vectorize: { $meta: req.body.question } });
 
   const prompt = `You are a helpful assistant that summarizes relevant notes to help answer a user's questions.
   Given the following notes, answer the user's question.
@@ -43,22 +42,6 @@ async function checkRateLimit(functionName) {
       throw new Error(`Maximum ${maxOpenAIRequestsPerHour} requests per hour`);
     }
   }
-}
-
-async function createEmbedding(input) {
-  await checkRateLimit('createEmbedding');
-  return axios({
-    method: "POST",
-    url: "https://api.openai.com/v1/embeddings",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-    },
-    data: {
-      model: "text-embedding-ada-002",
-      input
-    }
-  }).then(res => res.data.data[0].embedding);
 }
 
 async function makeChatGPTRequest(systemPrompt, question) {
