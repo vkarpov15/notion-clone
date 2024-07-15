@@ -28,7 +28,8 @@ const pageSchema = new Schema(
     },
     $vector: {
       type: [Number],
-      default: undefined
+      default: undefined,
+      select: true
     },
     $vectorize: String
   },

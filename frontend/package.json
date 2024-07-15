@@ -21,12 +21,13 @@
     "express-validator": "^6.6.1",
     "isomorphic-dompurify": "^0.7.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^8.3.0",
     "match-sorter": "^4.2.0",
+    "mongoose": "^8.5.0",
     "next": "13.x",
     "next-cookies": "^2.0.3",
     "next-images": "^1.4.1",
     "node-html-parser": "^6.1.13",
+    "node-inspect-extracted": "^3.0.2",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.0.0",
     "react-contenteditable": "^3.3.5",
@@ -37,6 +38,6 @@
     "typeface-roboto": "0.0.75"
   },
   "devDependencies": {
-    "@mongoosejs/studio": "0.0.24"
+    "@mongoosejs/studio": "0.0.29"
   }
 }
