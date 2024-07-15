@@ -32,8 +32,11 @@
     "react-contenteditable": "^3.3.5",
     "react-dom": "^18.2.0",
     "sass": "^1.26.10",
-    "stargate-mongoose": "^0.6.0",
+    "stargate-mongoose": "^0.6.3",
     "typeface-nunito-sans": "0.0.72",
     "typeface-roboto": "0.0.75"
+  },
+  "devDependencies": {
+    "@mongoosejs/studio": "0.0.24"
   }
 }
