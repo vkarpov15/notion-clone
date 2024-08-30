@@ -86,4 +86,7 @@ CREATE TABLE pages (
     "createdAt" DECIMAL,
     "updatedAt" DECIMAL
 );
+
+CREATE INDEX ON users (email);
+
 ```
