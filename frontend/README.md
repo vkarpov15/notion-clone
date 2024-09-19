@@ -61,3 +61,32 @@ Any other state properties are being used to keep track of user inputs and the v
   }
 }
 ```
+
+### With tables
+
+```
+CREATE TABLE users (
+    "_id" TEXT PRIMARY KEY,
+    email TEXT,
+    password TEXT,
+    name TEXT,
+    active BOOLEAN,
+    "activationToken" TEXT,
+    "resetToken" TEXT,
+    "resetTokenExpiry" DECIMAL,
+    pages TEXT,
+    "createdAt" DECIMAL,
+    "updatedAt" DECIMAL
+);
+
+CREATE TABLE pages (
+    "_id" TEXT PRIMARY KEY,
+    blocks TEXT,
+    creator TEXT,
+    "createdAt" DECIMAL,
+    "updatedAt" DECIMAL
+);
+
+CREATE INDEX ON users (email);
+
+```
