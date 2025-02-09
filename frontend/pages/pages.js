@@ -5,14 +5,16 @@ import Card from "../components/card";
 import Button from "../components/button";
 import Notice from "../components/notice";
 
+import { getPages, getPage } from "../controllers/pages";
+
 const PagesPage = ({ pages }) => {
   const initialPages = pages || [];
-  const [cards, setCards] = useState(initialPages.map((data) => data.page));
+  const [cards, setCards] = useState(initialPages);
 
   const deleteCard = async (pageId) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API}/pages/${pageId}`, {
-        method: "DELETE",
+      await fetch(`/api/delete-page?pageId=${encodeURIComponent(pageId)}`, {
+        method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
@@ -66,36 +68,21 @@ export const getServerSideProps = async (context) => {
     res.end();
   }
 
+  req.cookies = { token };
+
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API}/pages`, {
-      method: "GET",
-      credentials: "include",
-      // Forward the authentication cookie to the backend
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: req ? req.headers.cookie : undefined,
-      },
-    });
-    const data = await response.json();
-    const pageIdList = data.pages;
+    const pagesIdList = await getPages(req).then(res => res.pages);
     const pages = await Promise.all(
-      pageIdList.map(async (id) => {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API}/pages/${id}`,
-          {
-            method: "GET",
-            credentials: "include",
-            // Forward the authentication cookie to the backend
-            headers: {
-              "Content-Type": "application/json",
-              Cookie: req ? req.headers.cookie : undefined,
-            },
-          }
-        );
-        return await response.json();
+      pagesIdList.map(async (pageId) => {
+        const page = await getPage({ ...req, params: { pageId } }).then(res => res.page);
+        return page;
       })
     );
-    const filteredPages = pages.filter((page) => !page.errCode);
+    const filteredPages = pages
+      .filter((page) => !page.errCode)
+      // Need to do this because Next.js can't serialize ObjectIds, Dates
+      .map(page => JSON.parse(JSON.stringify(page)));
+
     return { props: { pages: filteredPages } };
   } catch (err) {
     console.log(err);

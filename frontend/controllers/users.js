@@ -7,12 +7,14 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const transport = require("../emails/transport");
 
+const { isAuth } = require("./auth");
+
 const {
   resetPasswordTemplate,
   emailConfirmationTemplate,
 } = require("../emails/templates");
 
-const signup = async (req, res, next) => {
+const signup = async (req) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
@@ -44,12 +46,11 @@ const signup = async (req, res, next) => {
     });
     const savedUser = await user.save();
 
-    /*await transport.sendMail({
-      from: process.env.MAIL_SENDER,
+    await transport.sendMail({
       to: savedUser.email,
       subject: "Confirm Your Email Address",
       html: emailConfirmationTemplate(savedUser.activationToken),
-    });*/
+    });
     console.log(savedUser.email);
     console.log("Confirm Your Email Address");
     console.log(emailConfirmationTemplate(savedUser.activationToken));
@@ -60,24 +61,17 @@ const signup = async (req, res, next) => {
       process.env.JWT_KEY
     );
 
-    // Set cookie in the browser to store authentication state
-    const maxAge = 1000 * 60 * 60 * 24 * 3; // 3 days
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: maxAge,
-      domain: process.env.DOMAIN,
-    });
-
-    res.status(201).json({
+    return {
       message: "User successfully created.",
       userId: savedUser._id,
-    });
+      token,
+    };
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
-const login = async (req, res, next) => {
+const login = async (req) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
@@ -109,25 +103,19 @@ const login = async (req, res, next) => {
       process.env.JWT_KEY
     );
 
-    // Set cookie in the browser to store authentication state
-    const maxAge = 1000 * 60 * 60; // 1 hour
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: maxAge,
-      domain: process.env.DOMAIN,
-    });
-
-    res.status(201).json({
+    return {
       message: "User successfully logged in.",
       token: token,
       userId: user._id.toString(),
-    });
+    };
   } catch (err) {
-    next(err);
+    console.error("users.login", err);
+    res.status(500).json({ message: err.message });
   }
 };
 
-const logout = (req, res, next) => {
+const logout = async (req) => {
+  isAuth(req);
   const userId = req.userId;
 
   if (!userId) {
@@ -136,14 +124,14 @@ const logout = (req, res, next) => {
     throw err;
   }
 
-  res.clearCookie("token", { domain: process.env.DOMAIN });
-  res.status(200).json({
+  return {
     message: "User successfully logged out.",
     userId: userId,
-  });
+  };
 };
 
-const getUser = async (req, res, next) => {
+const getUser = async (req) => {
+  isAuth(req);
   const userId = req.userId;
 
   try {
@@ -155,19 +143,20 @@ const getUser = async (req, res, next) => {
       throw err;
     }
 
-    res.status(200).json({
+    return {
       message: "User successfully fetched.",
       userId: user._id.toString(),
       email: user.email,
       name: user.name,
       pages: user.pages,
-    });
+    };
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
-const updateUser = async (req, res, next) => {
+const updateUser = async (req) => {
+  isAuth(req);
   const userId = req.userId;
   const name = req.body.name;
   const email = req.body.email;
@@ -192,18 +181,18 @@ const updateUser = async (req, res, next) => {
 
     const savedUser = await user.save();
 
-    res.status(201).json({
+    return {
       message: "User successfully updated.",
       userId: savedUser._id.toString(),
       name: savedUser.name,
       email: savedUser.email,
-    });
+    };
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
-const getResetToken = async (req, res, next) => {
+const getResetToken = async (req) => {
   const email = req.body.email;
 
   try {
@@ -229,21 +218,20 @@ const getResetToken = async (req, res, next) => {
     const savedUser = await user.save();
 
     await transport.sendMail({
-      from: process.env.MAIL_SENDER,
       to: savedUser.email,
       subject: "Your Password Reset Token",
       html: resetPasswordTemplate(resetToken),
     });
 
-    res.status(200).json({
+    return {
       message: "Password Reset successfully requested! Check your inbox.",
-    });
+    };
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
-const resetPassword = async (req, res, next) => {
+const resetPassword = async (req) => {
   const password = req.body.password;
   const resetToken = req.body.resetToken;
 
@@ -278,24 +266,17 @@ const resetPassword = async (req, res, next) => {
       process.env.JWT_KEY
     );
 
-    const maxAge = 1000 * 60 * 60; // 1 hour
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: maxAge,
-      domain: process.env.DOMAIN,
-    });
-
-    res.status(201).json({
+    return {
       message: "Password successfully changed.",
       token: token,
       userId: savedUser._id.toString(),
-    });
+    };
   } catch (err) {
     next(err);
   }
 };
 
-const activateAccount = async (req, res, next) => {
+const activateAccount = async (req) => {
   const activationToken = req.body.activationToken;
 
   try {
@@ -313,12 +294,12 @@ const activateAccount = async (req, res, next) => {
     user.activationToken = null;
     const savedUser = await user.save();
 
-    res.status(201).json({
+    return {
       message: "Account successfully activated.",
       userId: savedUser._id.toString(),
-    });
+    };
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 

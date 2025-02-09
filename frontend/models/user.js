@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require("./mongoose");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
@@ -39,4 +39,4 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", userSchema, "users", { overwriteModels: true });

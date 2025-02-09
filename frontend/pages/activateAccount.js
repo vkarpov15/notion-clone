@@ -1,5 +1,7 @@
 import Notice from "../components/notice";
 
+import { activateAccount } from "../controllers/users";
+
 const ActivateAccountPage = ({ activated, message }) => {
   const noticeType = activated ? "SUCCESS" : "ERROR";
 
@@ -20,22 +22,7 @@ export const getServerSideProps = async (context) => {
       throw new Error("Missing activation code.");
     }
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API}/users/activate`,
-      {
-        method: "POST",
-        credentials: "include",
-        // Forward the authentication cookie to the backend
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: req ? req.headers.cookie : undefined,
-        },
-        body: JSON.stringify({
-          activationToken: activationToken,
-        }),
-      }
-    );
-    const data = await response.json();
+    const data = await activateAccount({ ...req, body: { activationToken } });
 
     if (data.errCode) {
       throw new Error(data.message);

@@ -1,4 +1,7 @@
 import EditablePage from "../components/editablePage";
+import cookies from "next-cookies";
+
+import { postPage } from "../controllers/pages";
 
 // If a user hits "/", we create a blank page and redirect to that page
 // so that each user gets his/her personal space to test things
@@ -11,20 +14,12 @@ export const getServerSideProps = async (context) => {
   const blocks = [{ tag: "p", html: "", imageUrl: "" }];
   const res = context.res;
   const req = context.req;
+  const { token } = cookies(context);
+  req.cookies = { token };
+  req.body = { blocks };
+
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API}/pages`, {
-      method: "POST",
-      credentials: "include",
-      // Forward the authentication cookie to the backend
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: req ? req.headers.cookie : undefined,
-      },
-      body: JSON.stringify({
-        blocks: blocks,
-      }),
-    });
-    const data = await response.json();
+    const data = await postPage(req);
     const pageId = data.pageId;
     const creator = data.creator;
     const query = !creator ? "?public=true" : ""; // needed to show notice
