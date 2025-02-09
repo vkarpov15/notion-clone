@@ -81,7 +81,7 @@ const postPage = async (req) => {
         err.statusCode = 404;
         throw err;
       }
-      user.pages.push(savedPage._id);
+      user.pages = [...user.pages, savedPage._id];
       await user.save();
     }
 
