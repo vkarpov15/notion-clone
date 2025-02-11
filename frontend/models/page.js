@@ -37,7 +37,8 @@ const pageSchema = new Schema(
       }
     },
     vector: {
-      type: [Number]
+      type: [Number],
+      dimension: 1536
     }
   },
   { timestamps: true, versionKey: false, toObject: { getters: true }, toJSON: { getters: true }, autoCreate: false, autoIndex: false }

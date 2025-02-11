@@ -21,14 +21,7 @@ async function run() {
     pageTableDefinition.columns.vector = { type: 'vector', dimension: 1536 };
     await mongoose.connection.createTable(Page.collection.collectionName, pageTableDefinition);
     await Page.syncIndexes();
-    await mongoose.connection.collection(Page.collection.collectionName).runCommand({
-        createVectorIndex: {
-            name: 'pagesvector',
-            definition: {
-                column: 'vector'
-            }
-        }
-    });
+    await mongoose.connection.collection(Page.collection.collectionName).createVectorIndex('pagesvector', 'vector');
   }
   if (!tableNames.includes(RateLimit.collection.collectionName)) {
      await mongoose.connection.createTable(RateLimit.collection.collectionName, tableDefinitionFromSchema(RateLimit.schema));
