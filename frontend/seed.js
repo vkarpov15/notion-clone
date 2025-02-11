@@ -7,26 +7,34 @@ const Page = require("./models/page");
 const RateLimit = require("./models/rateLimit");
 const User = require("./models/user");
 
+const { tableDefinitionFromSchema } = require('stargate-mongoose');
+
 run().catch(error => {
   console.error(error);
   process.exit(-1);
 });
 
 async function run() {
-  const existingCollections = await mongoose.connection.listCollections()
-    .then(collections => collections.map(coll => coll.name));
-  console.log("Existing collections", existingCollections);
-  if (!existingCollections.includes(Page.collection.collectionName)) {
-    console.log("Creating collection", Page.collection.collectionName);
-    await Page.createCollection();
+  const tableNames = await mongoose.connection.listTables({ nameOnly: true });
+  if (!tableNames.includes(Page.collection.collectionName)) {
+    const pageTableDefinition = tableDefinitionFromSchema(Page.schema);
+    pageTableDefinition.columns.vector = { type: 'vector', dimension: 1536 };
+    await mongoose.connection.createTable(Page.collection.collectionName, pageTableDefinition);
+    await Page.syncIndexes();
+    await mongoose.connection.collection(Page.collection.collectionName).runCommand({
+        createVectorIndex: {
+            name: 'pagesvector',
+            definition: {
+                column: 'vector'
+            }
+        }
+    });
   }
-  if (!existingCollections.includes(User.collection.collectionName)) {
-    console.log("Creating collection", User.collection.collectionName);
-    await User.createCollection();
+  if (!tableNames.includes(RateLimit.collection.collectionName)) {
+     await mongoose.connection.createTable(RateLimit.collection.collectionName, tableDefinitionFromSchema(RateLimit.schema));
   }
-  if (!existingCollections.includes(RateLimit.collection.collectionName)) {
-    console.log("Creating collection", RateLimit.collection.collectionName);
-    await RateLimit.createCollection();
+  if (!tableNames.includes(User.collection.collectionName)) {
+    await mongoose.connection.createTable(User.collection.collectionName, tableDefinitionFromSchema(User.schema));
   }
 
   console.log("Done");

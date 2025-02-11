@@ -3,19 +3,16 @@ const Schema = mongoose.Schema;
 
 const rateLimitSchema = new Schema(
   {
-    recentRequests: [{
-      date: {
-        type: Date,
-        required: true,
-        default: () => Date.now()
-      },
-      url: {
-        type: String,
-        required: true
-      }
-    }]
+    functionName: {
+      type: String,
+      required: true
+    },
+    date: {
+      type: Date,
+      required: true
+    }
   },
-  { timestamps: true }
+  { timestamps: true, autoCreate: false, autoIndex: false }
 );
 
 module.exports = mongoose.model("RateLimit", rateLimitSchema, "ratelimits", { overwriteModels: true });

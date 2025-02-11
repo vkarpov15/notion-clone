@@ -55,9 +55,9 @@ const userSchema = new Schema(
       get(v) {
         return v == null ? v : new Date(v)
       }
-    },  
+    },
   },
-  { timestamps: true, versionKey: false, toObject: { getters: true }, toJSON: { getters: true } }
+  { timestamps: true, versionKey: false, toObject: { getters: true }, toJSON: { getters: true }, autoCreate: false, autoIndex: false }
 );
 
 module.exports = mongoose.model("User", userSchema, "users", { overwriteModels: true });
