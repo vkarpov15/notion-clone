@@ -13,11 +13,11 @@ const answerQuestion = async (req) => {
   const pages = await Page
     .find({ creator: userId })
     .limit(3)
-    .sort({ $vector: { $meta: embedding } });
+    .sort({ vector: { $meta: embedding } });
 
   const prompt = `You are a helpful assistant that summarizes relevant notes to help answer a user's questions.
   Given the following notes, answer the user's question.
-  
+
   ${pages.map(page => 'Note: ' + page.textContent).join('\n\n')}
   `.trim();
   const answers = await makeChatGPTRequest(prompt, req.body.question);
@@ -29,18 +29,22 @@ const answerQuestion = async (req) => {
 };
 
 async function checkRateLimit(functionName) {
-  const rateLimit = await RateLimit.collection.findOneAndUpdate(
-    {},
-    { $push: { recentRequests: { date: new Date(), url: functionName } } },
-    { returnDocument: 'before', upsert: true }
-  );
-  const recentRequests = rateLimit?.recentRequests ?? [];
+  const date = new Date();
+  await RateLimit.insertOne({ functionName, date });
+  const rateLimits = await RateLimit.find({ functionName }).sort({ date: 1 });
 
-  if (recentRequests.length >= maxOpenAIRequestsPerHour) {
-    await RateLimit.collection.updateOne({ _id: rateLimit._id }, { $pop: { recentRequests: -1 } });
-    
-    if (recentRequests[0].date > Date.now() - 1000 * 60 * 60) {
+  if (rateLimits.length >= maxOpenAIRequestsPerHour) {
+    await RateLimit.deleteOne({ _id: rateLimits[0]._id });
+
+    if (rateLimits[0].date > date.valueOf() - 1000 * 60 * 60) {
       throw new Error(`Maximum ${maxOpenAIRequestsPerHour} requests per hour`);
+    }
+    for (const rateLimit of rateLimits.slice(1)) {
+      if (rateLimit.date < date.valueOf() - 1000 * 60 * 60) {
+        await RateLimit.deleteOne({ _id: rateLimit._id });
+      } else {
+        break;
+      }
     }
   }
 }

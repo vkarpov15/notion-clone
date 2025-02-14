@@ -35,10 +35,16 @@ const pageSchema = new Schema(
       get(v) {
         return v == null ? v : new Date(v)
       }
-    },  
+    },
+    vector: {
+      type: [Number],
+      dimension: 1536
+    }
   },
-  { timestamps: true, versionKey: false, toObject: { getters: true }, toJSON: { getters: true } }
+  { timestamps: true, versionKey: false, toObject: { getters: true }, toJSON: { getters: true }, autoCreate: false, autoIndex: false }
 );
+
+pageSchema.index({ creator: 1 });
 
 pageSchema.virtual('textContent').get(function() {
   let text = '';
@@ -56,11 +62,11 @@ pageSchema.virtual('textContent').get(function() {
 });
 
 pageSchema.pre('save', async function() {
-  this.$vector = undefined;
+  this.vector = undefined;
   const text = this.textContent;
 
   if (text) {
-    const $vector = await axios({
+    const vector = await axios({
       method: 'POST',
       url: 'https://api.openai.com/v1/embeddings',
       headers: {
@@ -72,7 +78,7 @@ pageSchema.pre('save', async function() {
         input: text
       }
     }).then(res => res.data.data[0].embedding);
-    this.$vector = $vector;
+    this.vector = vector;
   }
 });
 
